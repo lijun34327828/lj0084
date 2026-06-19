@@ -1,0 +1,106 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    font-family: "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    line-height: 1.6;
+    font-weight: 400;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: #2C1810;
+    color: #F5EDE0;
+  }
+
+  body {
+    min-height: 100vh;
+    background: linear-gradient(145deg, #2C1810 0%, #3D2218 40%, #2C1810 100%);
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: rgba(44, 24, 16, 0.3);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #C4956A;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #A87B52;
+  }
+}
+
+@layer components {
+  .input-field {
+    @apply w-full px-3 py-2 rounded-lg border border-clay-600/50 bg-clay-800/80 text-clay-100
+           placeholder-clay-500 focus:outline-none focus:ring-2 focus:ring-clay-400/50 focus:border-clay-400
+           transition-all duration-200 text-sm;
+  }
+
+  .btn-primary {
+    @apply px-4 py-2 rounded-full bg-clay-400 text-clay-900 font-medium
+           hover:bg-clay-300 hover:shadow-lg hover:-translate-y-0.5
+           active:translate-y-0 transition-all duration-200 text-sm;
+  }
+
+  .btn-danger {
+    @apply px-3 py-1.5 rounded-full bg-profit-low/20 text-profit-low font-medium
+           hover:bg-profit-low/30 hover:shadow-md
+           transition-all duration-200 text-xs;
+  }
+
+  .card {
+    @apply bg-clay-100/5 backdrop-blur-sm border border-clay-600/20 rounded-2xl
+           shadow-lg shadow-clay-900/20;
+  }
+
+  .profit-badge-high {
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold
+           bg-profit-high/15 text-profit-high;
+  }
+
+  .profit-badge-medium {
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold
+           bg-profit-medium/15 text-profit-medium;
+  }
+
+  .profit-badge-low {
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold
+           bg-profit-low/15 text-profit-low;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.3s ease-out forwards;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.shimmer-bar {
+  background: linear-gradient(90deg, transparent 0%, #C4956A40 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
