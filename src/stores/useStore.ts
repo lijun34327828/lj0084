@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import {
   type Product,
+  type ProductInput,
+  type ProductUpdateInput,
   type Combination,
   fetchProducts,
   createProduct as apiCreate,
@@ -18,8 +20,8 @@ interface StoreState {
   error: string | null;
   loadProducts: () => Promise<void>;
   loadCombinations: () => Promise<void>;
-  addProduct: (data: Omit<Product, "id">) => Promise<void>;
-  editProduct: (id: string, data: Partial<Omit<Product, "id">>) => Promise<void>;
+  addProduct: (data: ProductInput) => Promise<void>;
+  editProduct: (id: string, data: ProductUpdateInput) => Promise<void>;
   removeProduct: (id: string) => Promise<void>;
   recalculate: () => Promise<void>;
 }

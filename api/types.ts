@@ -6,6 +6,8 @@ export interface Product {
   category: Category;
   cost: number;
   price: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CombinationItem {

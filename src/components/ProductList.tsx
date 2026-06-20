@@ -21,6 +21,21 @@ const CATEGORY_COLORS: Record<string, string> = {
   other: "bg-gray-600/30 text-gray-300",
 };
 
+function formatDateTime(isoStr: string): string {
+  try {
+    const date = new Date(isoStr);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  } catch {
+    return isoStr;
+  }
+}
+
 function ProductRow({ product }: { product: Product }) {
   const editProduct = useStore((s) => s.editProduct);
   const removeProduct = useStore((s) => s.removeProduct);
@@ -100,6 +115,7 @@ function ProductRow({ product }: { product: Product }) {
           />
         </td>
         <td className="py-2 px-3 text-xs text-clay-400">-</td>
+        <td className="py-2 px-3 text-xs text-clay-400">-</td>
         <td className="py-2 px-3">
           <div className="flex items-center gap-1">
             <button onClick={handleSave} className="p-1 rounded-full hover:bg-profit-high/20 text-profit-high transition-colors">
@@ -128,6 +144,9 @@ function ProductRow({ product }: { product: Product }) {
         <span className={`text-xs font-semibold ${profit >= 0 ? "text-profit-high" : "text-profit-low"}`}>
           ¥{profit.toFixed(0)} ({profitRate}%)
         </span>
+      </td>
+      <td className="py-2.5 px-3 text-xs text-clay-400 whitespace-nowrap">
+        {formatDateTime(product.updatedAt)}
       </td>
       <td className="py-2.5 px-3">
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -171,6 +190,7 @@ export default function ProductList() {
                 <th className="py-2 px-3 text-left text-xs font-semibold text-clay-400 uppercase tracking-wider">成本</th>
                 <th className="py-2 px-3 text-left text-xs font-semibold text-clay-400 uppercase tracking-wider">售价</th>
                 <th className="py-2 px-3 text-left text-xs font-semibold text-clay-400 uppercase tracking-wider">毛利</th>
+                <th className="py-2 px-3 text-left text-xs font-semibold text-clay-400 uppercase tracking-wider">上次修改时间</th>
                 <th className="py-2 px-3 text-left text-xs font-semibold text-clay-400 uppercase tracking-wider">操作</th>
               </tr>
             </thead>

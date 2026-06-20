@@ -12,7 +12,12 @@ export interface Product {
   category: string;
   cost: number;
   price: number;
+  createdAt: string;
+  updatedAt: string;
 }
+
+export type ProductInput = Omit<Product, "id" | "createdAt" | "updatedAt">;
+export type ProductUpdateInput = Partial<ProductInput>;
 
 export interface CombinationItem {
   productId: string;
@@ -41,7 +46,7 @@ export async function fetchProducts(): Promise<Product[]> {
 }
 
 export async function createProduct(
-  data: Omit<Product, "id">
+  data: ProductInput
 ): Promise<Product> {
   const res = await api.post("/products", data);
   return res.data.product;
@@ -49,7 +54,7 @@ export async function createProduct(
 
 export async function updateProduct(
   id: string,
-  data: Partial<Omit<Product, "id">>
+  data: ProductUpdateInput
 ): Promise<Product> {
   const res = await api.put(`/products/${id}`, data);
   return res.data.product;
