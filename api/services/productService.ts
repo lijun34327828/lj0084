@@ -45,11 +45,12 @@ export function getProductById(id: string): Product | undefined {
 export function createProduct(data: Omit<Product, "id" | "createdAt" | "updatedAt">): Product {
   const insert = db.prepare(`
     INSERT INTO products (name, category, cost, price, created_at, updated_at)
-    VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))
+    VALUES (?, ?, ?, ?, ?, ?)
   `);
 
   const result = db.transaction(() => {
-    const info = insert.run(data.name, data.category, data.cost, data.price);
+    const ts = new Date().toISOString();
+    const info = insert.run(data.name, data.category, data.cost, data.price, ts, ts);
     const row = db.prepare('SELECT * FROM products WHERE id = ?').get(info.lastInsertRowid) as ProductRow;
     return rowToProduct(row);
   })();
@@ -88,7 +89,8 @@ export function updateProduct(
     return rowToProduct(existing);
   }
 
-  fields.push('updated_at = datetime(\'now\')');
+  fields.push('updated_at = ?');
+  values.push(new Date().toISOString());
   values.push(Number(id));
 
   const result = db.transaction(() => {

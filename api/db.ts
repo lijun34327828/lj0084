@@ -12,6 +12,8 @@ const db = new Database(dbPath);
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
 
+const nowIso = () => new Date().toISOString();
+
 db.exec(`
   CREATE TABLE IF NOT EXISTS products (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -19,16 +21,42 @@ db.exec(`
     category TEXT NOT NULL,
     cost REAL NOT NULL DEFAULT 0,
     price REAL NOT NULL DEFAULT 0,
-    created_at TEXT NOT NULL DEFAULT (datetime('now')),
-    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
   )
 `);
+
+interface ProductRow {
+  id: number;
+  created_at: string;
+  updated_at: string;
+}
+
+const existingRows = db.prepare('SELECT id, created_at, updated_at FROM products').all() as ProductRow[];
+if (existingRows.length > 0) {
+  const updateStmt = db.prepare('UPDATE products SET created_at = ?, updated_at = ? WHERE id = ?');
+  const migrate = db.transaction(() => {
+    for (const row of existingRows) {
+      if (!row.created_at.includes('T') || !row.created_at.endsWith('Z')) {
+        const convertedCreated = row.created_at.includes('T')
+          ? row.created_at + 'Z'
+          : new Date(row.created_at.replace(' ', 'T') + 'Z').toISOString();
+        const convertedUpdated = row.updated_at.includes('T')
+          ? row.updated_at + 'Z'
+          : new Date(row.updated_at.replace(' ', 'T') + 'Z').toISOString();
+        updateStmt.run(convertedCreated, convertedUpdated, row.id);
+      }
+    }
+  });
+  migrate();
+  console.log('已有数据时间格式迁移完成');
+}
 
 const count = db.prepare('SELECT COUNT(*) as cnt FROM products').get() as { cnt: number };
 if (count.cnt === 0) {
   const insert = db.prepare(`
     INSERT INTO products (name, category, cost, price, created_at, updated_at)
-    VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))
+    VALUES (?, ?, ?, ?, ?, ?)
   `);
 
   const seedProducts = [
@@ -44,7 +72,8 @@ if (count.cnt === 0) {
 
   const insertMany = db.transaction(() => {
     for (const p of seedProducts) {
-      insert.run(p.name, p.category, p.cost, p.price);
+      const ts = nowIso();
+      insert.run(p.name, p.category, p.cost, p.price, ts, ts);
     }
   });
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { TrendingUp, TrendingDown, Minus, ChevronDown, ChevronUp } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, ChevronDown, ChevronUp, Download } from "lucide-react";
 import { useStore } from "@/stores/useStore";
 import type { Combination } from "@/utils/api";
 
@@ -29,6 +29,59 @@ const PROFILE_LEVEL_CONFIG = {
     bg: "bg-profit-low/[0.03]",
   },
 };
+
+const PROFIT_LEVEL_LABEL: Record<string, string> = {
+  high: "高利润",
+  medium: "中利润",
+  low: "低利润",
+};
+
+function formatDateForFilename(): string {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const h = String(d.getHours()).padStart(2, "0");
+  const min = String(d.getMinutes()).padStart(2, "0");
+  const s = String(d.getSeconds()).padStart(2, "0");
+  return `${y}${m}${day}${h}${min}${s}`;
+}
+
+function escapeCsvField(value: string | number): string {
+  const str = String(value);
+  if (str.includes(",") || str.includes("\"") || str.includes("\n") || str.includes("\r")) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
+}
+
+function exportCombinationsToCsv(combinations: Combination[]): void {
+  const headers = ["组合名称", "包含成品", "总成本", "总售价", "总毛利", "毛利率", "利润等级"];
+  const rows = combinations.map((c) => [
+    c.name,
+    c.items.map((i) => i.productName).join("、"),
+    c.totalCost,
+    c.totalPrice,
+    c.totalProfit,
+    `${(c.overallProfitRate * 100).toFixed(1)}%`,
+    PROFIT_LEVEL_LABEL[c.profitLevel] || c.profitLevel,
+  ]);
+
+  const csvContent = [headers, ...rows]
+    .map((row) => row.map(escapeCsvField).join(","))
+    .join("\r\n");
+
+  const BOM = "\uFEFF";
+  const blob = new Blob([BOM + csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `组合方案_${formatDateForFilename()}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
 
 function CombinationRow({ combo, rank }: { combo: Combination; rank: number }) {
   const [expanded, setExpanded] = useState(rank <= 3);
@@ -139,17 +192,32 @@ export default function CombinationTable() {
     low: combinations.filter((c) => c.profitLevel === "low").length,
   };
 
+  const handleExport = () => {
+    exportCombinationsToCsv(filtered);
+  };
+
   return (
     <div className="card p-5">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-display text-lg font-bold text-clay-200 tracking-wide">
           组合收益推演
         </h3>
-        {calculating && (
-          <div className="h-1 w-24 rounded-full overflow-hidden bg-clay-700">
-            <div className="shimmer-bar h-full w-full" />
-          </div>
-        )}
+        <div className="flex items-center gap-3">
+          {calculating && (
+            <div className="h-1 w-24 rounded-full overflow-hidden bg-clay-700">
+              <div className="shimmer-bar h-full w-full" />
+            </div>
+          )}
+          {combinations.length > 0 && (
+            <button
+              onClick={handleExport}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-clay-600/30 text-clay-200 text-xs font-medium hover:bg-clay-500/40 transition-colors border border-clay-500/30"
+            >
+              <Download size={14} />
+              导出方案
+            </button>
+          )}
+        </div>
       </div>
 
       {combinations.length === 0 ? (
